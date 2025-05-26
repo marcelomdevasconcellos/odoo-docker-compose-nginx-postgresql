@@ -31,6 +31,7 @@ ODOO_HOME="/opt/odoo"
 echo "#1 - Atualizando pacotes e instalando dependências..."
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y \
+    software-properties-common \
     git python3 python3-venv python3-dev \
     build-essential libxslt1-dev libzip-dev libldap2-dev libsasl2-dev libffi-dev \
     libpng-dev libjpeg-dev libpq-dev \
@@ -154,7 +155,7 @@ server {
 EOF
 
 sudo ln -sf /etc/nginx/sites-available/$SUBDOMAIN /etc/nginx/sites-enabled/
-sudo nginx -t\ nsudo systemctl reload nginx
+sudo nginx -t && sudo systemctl reload nginx
 
 # 10. Configurar HTTPS via Certbot
 echo "#10 - Obtendo certificado SSL com Certbot..."
