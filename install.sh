@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Fail on errors
-echo "Iniciando instalação do Odoo 18..."
 set -e
+
+echo "Iniciando instalação do Odoo 18..."
 
 # Função para exibir uso do script
 usage() {
@@ -30,7 +31,7 @@ ODOO_HOME="/opt/odoo"
 echo "#1 - Atualizando pacotes e instalando dependências..."
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y \
-    git python3.12 python3.12-venv python3.12-dev \
+    git python3 python3-venv python3-dev \
     build-essential libxslt1-dev libzip-dev libldap2-dev libsasl2-dev libffi-dev \
     libpng-dev libjpeg-dev libpq-dev \
     nodejs npm less postgresql postgresql-client \
@@ -63,7 +64,7 @@ sudo -u $ODOO_USER git clone --depth 1 --branch $ODOO_VERSION https://github.com
 
 # 6. Configurar ambiente Python
 echo "#6 - Criando virtualenv e instalando dependências Python..."
-sudo -u $ODOO_USER python3.12 -m venv $ODOO_HOME/venv
+sudo -u $ODOO_USER python3 -m venv $ODOO_HOME/venv
 source $ODOO_HOME/venv/bin/activate
 pip install --upgrade pip
 pip install wheel
@@ -153,8 +154,7 @@ server {
 EOF
 
 sudo ln -sf /etc/nginx/sites-available/$SUBDOMAIN /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+sudo nginx -t\ nsudo systemctl reload nginx
 
 # 10. Configurar HTTPS via Certbot
 echo "#10 - Obtendo certificado SSL com Certbot..."
