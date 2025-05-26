@@ -65,6 +65,7 @@ sudo -u $ODOO_USER git clone --depth 1 --branch $ODOO_VERSION https://github.com
 
 # 6. Configurar ambiente Python
 echo "#6 - Criando virtualenv e instalando dependências Python..."
+sudo -u rm -rf $ODOO_HOME/venv
 sudo -u $ODOO_USER python3 -m venv $ODOO_HOME/venv
 source $ODOO_HOME/venv/bin/activate
 pip install --upgrade pip
