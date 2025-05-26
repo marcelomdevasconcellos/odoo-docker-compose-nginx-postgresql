@@ -69,6 +69,9 @@ sudo -u $ODOO_USER python3 -m venv $ODOO_HOME/venv
 source $ODOO_HOME/venv/bin/activate
 pip install --upgrade pip
 pip install wheel
+# Ajuste: resolver erro de compilação do gevent substituindo versão para uma que possui wheel
+sudo -u $ODOO_USER sed -i 's/gevent==21.8.0/gevent==21.12.0/' $ODOO_HOME/$ODOO_VERSION/requirements.txt
+
 pip install -r $ODOO_HOME/$ODOO_VERSION/requirements.txt
 
 # 7. Configurar arquivo de configuração
