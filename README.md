@@ -88,6 +88,7 @@
 
 ### Nginx SSL config example
 
+```
   server {
       listen 443 ssl;
       server_name domain.com.br;
@@ -115,6 +116,7 @@
           root /usr/share/nginx/html;
       }
   }
+```
 
 ##  Documentation 📜
 
@@ -126,17 +128,19 @@
 
 ### Linux Basic Commands 🐧
 
-` sudo apt update && sudo apt upgrade -y ` <br/>
-` sudo apt install docker docker-compose -y ` <br/>
-` git clone https://github.com/DanielNery/odoo-docker-compose-nginx-postgresql.git ` <br/>
-` cd odoo-docker-compose-nginx-postgresql ` <br/>
-` sudo docker-compose up -d ` <br/>
+```
+sudo apt update && sudo apt upgrade -y
+sudo apt install docker docker-compose -y
+git clone https://github.com/marcelomdevasconcellos/odoo-docker-compose-nginx-postgresql.git /home/odoo
+cd /home/odoo
+sudo docker-compose up -d
+```
 
 ### Windowns or Mac Tutorial 🍎
 
   + Install Docker Desktop https://www.docker.com/products/docker-desktop/
   
-    ` git clone https://github.com/DanielNery/odoo-docker-compose-nginx-postgresql.git ` <br/>
+    ` git clone https://github.com/marcelomdevasconcellos/odoo-docker-compose-nginx-postgresql.git ` <br/>
     ` cd odoo-docker-compose-nginx-postgresql ` <br/>
     ` docker-compose up -d ` <br/>
 

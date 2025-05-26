@@ -9,3 +9,5 @@ env-sample
 include_utils.sh
 addons/addons
 certbot/*
+
+.idea/*
