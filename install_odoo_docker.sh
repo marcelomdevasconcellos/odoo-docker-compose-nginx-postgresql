@@ -33,66 +33,66 @@ cd "${INSTALL_DIR}"
 cat > docker-compose.yml <<EOF
 version: '3'
 services:
-  odoo:
-    image: odoo:latest
-    restart: always
-    container_name: odoo
-    volumes:
-      - ./data:/var/lib/odoo
-      - ./addons:/mnt/extra-addons/:rw
-      - ./config/odoo:/etc/odoo/:rw
-      - ./odoo-web-data:/var/lib/odoo/:rw
-    networks:
-      - odoo_network
+    odoo:
+        container_name: odoo
+        image: odoo:latest
+        restart: always
+        volumes:
+            - ./addons:/mnt/extra-addons/:rw
+            - ./config/odoo:/etc/odoo/:rw
+            - ./odoo-web-data:/var/lib/odoo/:rw
+        ports:
+            - "8069:8069"
+        depends_on:
+            - "db"
+        networks:
+          - odoo_network
+    nginx:
+        container_name: nginx
+        image: nginx:latest
+        restart: unless-stopped
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - ./config/nginx/conf:/etc/nginx/conf.d/:rw
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        depends_on:
+            - "odoo"
+        networks:
+            - odoo_network
+    certbot:
+        image: certbot/certbot
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt
+            - ./certbot/www:/var/www/certbot
+        command: certonly --webroot -w /var/www/certbot --force-renewal --email marcelomdevasconcellos@gmail.com -d odoo --agree-tos
+        depends_on:
+            - nginx
+        networks:
+          - odoo_network
 
-  nginx:
-    image: nginx:latest
-    restart: unless-stopped
-    container_name: nginx
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./config/nginx/conf:/etc/nginx/conf.d/:rw
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    depends_on:
-      - odoo
-    networks:
-      - odoo_network
-
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --force-renewal \
-             --email ${EMAIL} -d ${DOMAIN} --agree-tos
-    depends_on:
-      - nginx
-    networks:
-      - odoo_network
-
-  db:
-    image: postgres:13
-    restart: always
-    container_name: postgresql
-    environment:
-      - POSTGRES_PASSWORD=odoo
-      - POSTGRES_USER=odoo
-      - POSTGRES_DB=odoo
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    ports:
-      - "127.0.0.1:9432:5432"
-    volumes:
-      - ./odoo-db-data:/var/lib/postgresql/data/pgdata
-    networks:
-      - odoo_network
-    logging:
-      driver: json-file
-      options:
-        max-size: "30m"
-        max-file: "10"
+    db:
+      image: postgres:13
+      restart: always
+      container_name: postgresql
+      environment:
+        - POSTGRES_PASSWORD=odoo
+        - POSTGRES_USER=odoo
+        - POSTGRES_DB=odoo
+        - PGDATA=/var/lib/postgresql/data/pgdata
+      ports:
+        - "127.0.0.1:9432:5432"
+      volumes:
+        - ./odoo-db-data:/var/lib/postgresql/data/pgdata
+      networks:
+        - odoo_network
+      logging:
+        driver: json-file
+        options:
+          max-size: "30m"
+          max-file: "10"
 
 networks:
   odoo_network:
@@ -187,6 +187,10 @@ server {
     }
 }
 EOF
+
+cd /opt/odoo                     # ou onde estiver seu docker-compose.yml
+sudo mkdir -p odoo-web-data/.local
+sudo chown -R 100:101 odoo-web-data
 
 # 8) Recarrega Nginx com SSL
 ${COMPOSE_BIN} exec nginx nginx -s reload || true
