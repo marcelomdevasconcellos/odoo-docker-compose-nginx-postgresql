@@ -38,6 +38,7 @@ services:
     restart: always
     container_name: odoo
     volumes:
+      - ./data:/var/lib/odoo
       - ./addons:/mnt/extra-addons/:rw
       - ./config/odoo:/etc/odoo/:rw
       - ./odoo-web-data:/var/lib/odoo/:rw
