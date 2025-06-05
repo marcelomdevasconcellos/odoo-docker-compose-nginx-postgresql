@@ -6,6 +6,12 @@ if [[ $# -ne 2 ]]; then
   exit 1
 fi
 
+# sudo mkdir -p /opt/odoo
+# sudo curl -L \
+#  https://raw.githubusercontent.com/marcelomdevasconcellos/odoo-docker-compose-nginx-postgresql/refs/heads/main/install_odoo_docker.sh \
+#  -o /opt/odoo/install_odoo_docker.sh
+# git clone https://github.com/marcelomdevasconcellos/odoo-docker-compose-nginx-postgresql /opt/odoo
+
 DOMAIN="$1"
 EMAIL="$2"
 INSTALL_DIR="/opt/odoo"
@@ -30,78 +36,78 @@ systemctl enable docker && systemctl start docker
 mkdir -p "${INSTALL_DIR}"
 cd "${INSTALL_DIR}"
 
-cat > docker-compose.yml <<EOF
-version: '3'
-services:
-    odoo:
-        container_name: odoo
-        image: odoo:latest
-        restart: always
-        volumes:
-            - ./addons:/mnt/extra-addons/:rw
-            - ./config/odoo:/etc/odoo/:rw
-            - ./odoo-web-data:/var/lib/odoo/:rw
-        ports:
-            - "8069:8069"
-        depends_on:
-            - "db"
-        networks:
-          - odoo_network
-    nginx:
-        container_name: nginx
-        image: nginx:latest
-        restart: unless-stopped
-        ports:
-            - 80:80
-            - 443:443
-        volumes:
-            - ./config/nginx/conf:/etc/nginx/conf.d/:rw
-            - ./certbot/conf:/etc/letsencrypt
-            - ./certbot/www:/var/www/certbot
-        depends_on:
-            - "odoo"
-        networks:
-            - odoo_network
-    certbot:
-        image: certbot/certbot
-        volumes:
-            - ./certbot/conf:/etc/letsencrypt
-            - ./certbot/www:/var/www/certbot
-        command: certonly --webroot -w /var/www/certbot --force-renewal --email marcelomdevasconcellos@gmail.com -d odoo --agree-tos
-        depends_on:
-            - nginx
-        networks:
-          - odoo_network
-
-    db:
-      image: postgres:13
-      restart: always
-      container_name: postgresql
-      environment:
-        - POSTGRES_PASSWORD=odoo
-        - POSTGRES_USER=odoo
-        - POSTGRES_DB=odoo
-        - PGDATA=/var/lib/postgresql/data/pgdata
-      ports:
-        - "127.0.0.1:9432:5432"
-      volumes:
-        - ./odoo-db-data:/var/lib/postgresql/data/pgdata
-      networks:
-        - odoo_network
-      logging:
-        driver: json-file
-        options:
-          max-size: "30m"
-          max-file: "10"
-
-networks:
-  odoo_network:
-    driver: bridge
-
-volumes:
-  odoo-web-data:
-  odoo-db-data:
-EOF
+#cat > docker-compose.yml <<EOF
+#version: '3'
+#services:
+#    odoo:
+#        container_name: odoo
+#        image: odoo:latest
+#        restart: always
+#        volumes:
+#            - ./addons:/mnt/extra-addons/:rw
+#            - ./config/odoo:/etc/odoo/:rw
+#            - ./odoo-web-data:/var/lib/odoo/:rw
+#        ports:
+#            - "8069:8069"
+#        depends_on:
+#            - "db"
+#        networks:
+#          - odoo_network
+#    nginx:
+#        container_name: nginx
+#        image: nginx:latest
+#        restart: unless-stopped
+#        ports:
+#            - 80:80
+#            - 443:443
+#        volumes:
+#            - ./config/nginx/conf:/etc/nginx/conf.d/:rw
+#            - ./certbot/conf:/etc/letsencrypt
+#            - ./certbot/www:/var/www/certbot
+#        depends_on:
+#            - "odoo"
+#        networks:
+#            - odoo_network
+#    certbot:
+#        image: certbot/certbot
+#        volumes:
+#            - ./certbot/conf:/etc/letsencrypt
+#            - ./certbot/www:/var/www/certbot
+#        command: certonly --webroot -w /var/www/certbot --force-renewal --email marcelomdevasconcellos@gmail.com -d odoo --agree-tos
+#        depends_on:
+#            - nginx
+#        networks:
+#          - odoo_network
+#
+#    db:
+#      image: postgres:13
+#      restart: always
+#      container_name: postgresql
+#      environment:
+#        - POSTGRES_PASSWORD=odoo
+#        - POSTGRES_USER=odoo
+#        - POSTGRES_DB=odoo
+#        - PGDATA=/var/lib/postgresql/data/pgdata
+#      ports:
+#        - "127.0.0.1:9432:5432"
+#      volumes:
+#        - ./odoo-db-data:/var/lib/postgresql/data/pgdata
+#      networks:
+#        - odoo_network
+#      logging:
+#        driver: json-file
+#        options:
+#          max-size: "30m"
+#          max-file: "10"
+#
+#networks:
+#  odoo_network:
+#    driver: bridge
+#
+#volumes:
+#  odoo-web-data:
+#  odoo-db-data:
+#EOF
 
 # 3) Cria config inicial do Nginx (HTTP + ACME-challenge + proxy Odoo)
 mkdir -p config/nginx/conf
@@ -188,12 +194,14 @@ server {
 }
 EOF
 
-cd /opt/odoo                     # ou onde estiver seu docker-compose.yml
+cd "${INSTALL_DIR}"
 sudo mkdir -p odoo-web-data/.local
 sudo chown -R 100:101 odoo-web-data
 
 # 8) Recarrega Nginx com SSL
 ${COMPOSE_BIN} exec nginx nginx -s reload || true
+
+sudo docker-compose exec odoo  odoo  -c /etc/odoo/odoo.conf  -d odoo  -i base --stop-after-init
 
 echo
 echo "==========================================="
